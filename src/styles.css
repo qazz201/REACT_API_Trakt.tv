@@ -1,0 +1,18 @@
+body {
+  color: black;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid red;
+}
+.tableRow td {
+  height: 3.5em;
+  border: 1px solid blue;
+  text-align: center;
+}
+/*
+.showPoster{
+  width:300px;
+  height:300px;
+}*/
