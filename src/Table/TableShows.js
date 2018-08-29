@@ -1,38 +1,65 @@
 import React, { Component } from "react";
 
 import Table from "./Table";
-
 import TableHeader from "./TableHeader";
 
 class TableShows extends Component {
-  render() {
-    //console.log(this.props.shows);
+  style = { width: 300, height: 430, position: "relative" };
 
-    var row = this.props.shows.map((elem, key) => {
+  render() {
+    var { shows, showsImg } = this.props;
+
+    console.log(shows, "SHOWS");
+
+    var row = shows.map((elem, key) => {
+      var showCounter = key,
+        kindOfImg = showsImg[key] ? (
+          <img
+            src={showsImg[key]}
+            alt={elem.title}
+            className="showPoster"
+            style={{ width: 300, position: "relative" }}
+          />
+        ) : (
+          <img
+            src="https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-343406.jpg"
+            style={this.style}
+            alt={elem.title}
+            className="showPoster"
+          />
+        ),
+        showOverview = elem.overview || elem.show.overview,
+        showTitle = elem.title || elem.show.title,
+        showRating = (elem.rating || elem.show.rating).toFixed(1),
+        showGenres = (elem.genres || elem.show.genres).join(", "),
+        showEpisodes = elem.aired_episodes || elem.show.aired_episodes,
+        showYear = elem.year || elem.show.year,
+        showCountry = elem.country || elem.show.country;
+
       return (
         <tr key={key} className="tableRow">
-          <td>{++key}</td>
-          <td>
-            {elem.Poster != "N/A" ? (
-              <img src={elem.Poster} alt={elem.Title} className="showPoster" />
-            ) : (
-              <img
-                src="https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-343406.jpg"
-                width="300"
-                height="300"
-                alt={elem.Title}
-                className="showPoster"
-              />
-            )}
+          <td>{++showCounter}</td>
+          <td className="imgContainer" style={this.style}>
+            {kindOfImg}
+            <div className="showPlot">
+              <p>{showOverview}</p>
+            </div>
           </td>
-          <td>{elem.Title} </td>
-          <td>
-            <p>{elem.Genre}</p>
+
+          <td style={{ padding: 10 }}>
+            <h1>{showTitle}</h1>
+            <div className="rating">
+              Rating:&nbsp;
+              <span>{showRating}</span>
+            </div>
           </td>
-          <td>{elem.totalSeasons}</td>
-          <td>{elem.Year}</td>
-          <td>{elem.Country}</td>
-          <td>{elem.trailer}</td>
+
+          <td>
+            <p style={{ textTransform: "uppercase" }}>{showGenres}</p>
+          </td>
+          <td>{showEpisodes}</td>
+          <td>{showYear}</td>
+          <td style={{ textTransform: "uppercase" }}>{showCountry}</td>
         </tr>
       );
     });
@@ -41,7 +68,7 @@ class TableShows extends Component {
       <React.Fragment>
         <tbody>
           {/*  <TableHeader/>*/}
-          {row ? row : "LOAD///"}
+          {row}
         </tbody>
       </React.Fragment>
     );

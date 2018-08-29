@@ -1,0 +1,13 @@
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.inputYourPage {
+  width: 2em;
+  background: transparent;
+  color: rgb(167, 185, 132);
+  border: none;
+  outline: none;
+  font-size: 24px;
+  border-bottom: 1px solid rgba(209, 214, 214, 0.788);
+  text-align: center;
+}

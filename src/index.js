@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+import Button from "@material-ui/core/Button";
 
 import Table from "./Table";
+
+/*
+import { Button } from "react-materialize";
+import $ from "jquery";*/
+
 //import TableRow from "./Table/TableRow";
 
 import "./styles.css";
@@ -10,19 +16,37 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      findShowName: "",
-      shows: [],
-      showId: []
+      initialRequest:
+        "https://api.trakt.tv/shows/popular?extended=full&page=1&limit=10",
+
+      apiKeyImage: "8d1f23e693489e22109871c84cd01437",
+      shows: ["initLength"],
+      showsImg: [],
+      pageCount: "",
+      showGenre: "",
+      imgLoading: true
     };
   }
 
-  componentDidMount() {
-    this.sendRequest(
-      "https://api.trakt.tv/shows/popular?extended=full&page=1&limit=40"
-    );
+  componentWillMount() {
+    this.sendRequest(this.state.initialRequest);
   }
+  setShowGenre = genre => {
+    this.setState({ showGenre: genre });
+  };
+
+  /*---------------------------GET_DATA_START----------------------------------------------------*/
 
   sendRequest = initialRequest => {
+    this.setState(nextState => {
+      if (nextState.initialRequest !== initialRequest) {
+        return {
+          imgLoading: true,
+          initialRequest: initialRequest
+        };
+      }
+    });
+
     var header = {
       "Content-Type": "application/json",
       "trakt-api-version": "2",
@@ -30,85 +54,145 @@ class App extends Component {
         "78cc10532d459b67e34f0d2ff41daf47df1178cafd5e8885d6dc31dbcafd855c"
     };
 
-    var init = {
+    var requestProps = {
       method: "GET",
       headers: header
     };
-    /*https://api.trakt.tv/search/show?query=tron*/
-    /*http://www.omdbapi.com/?i=tt3896198&apikey=3e1c9722*/
-    fetch(initialRequest, init)
-      .then(response => response.json())
-      .then(res => {
-        var showId = [];
 
-        if (this.state.findShowName) {
-          showId = res.map(elem => {
-            return elem.show.ids.imdb;
-          });
-          this.getImage(showId);
-        }
-
+    fetch(initialRequest, requestProps)
+      .then(response => {
+        var responsePageCount = response.headers.get("X-Pagination-Page-Count");
         this.setState({
-          shows: res,
-          showId: showId
+          pageCount: responsePageCount
         });
 
-        // console.log(res)
+        return response.json();
+      })
+      .then(res => {
+        console.log(res, "INITIAL");
+        var showId = [];
+
+        showId = res.map(elem => {
+          if (elem.thetvdb_id) {
+            return elem.thetvdb_id;
+          } else if (elem.show) {
+            return elem.show.ids.tvdb;
+          } else {
+            return elem.ids.tvdb;
+          }
+        });
+        console.log(showId, "SHOW ID");
+
+        this.setState(
+          {
+            shows: res
+          },
+          this.getImage(showId)
+        );
+
         return res;
-      });
+      })
+      .catch(error => error.message);
   };
 
   getImage = showId => {
-    console.log(showId, "LLLLL");
-
-    var showOnlyWithImg = showId.filter(removeNullelement => removeNullelement); //Remove null string in array showId
-
     Promise.all(
-      showOnlyWithImg.map(elem => {
-        return fetch(`https://www.omdbapi.com/?i=${elem}&apikey=3e1c9722`)
+      showId.map(elem => {
+        return fetch(
+          // http://webservice.fanart.tv/v3/tv/79313?api_key=8d1f23e693489e22109871c84cd01437
+          `https://webservice.fanart.tv/v3/tv/${elem}&api_key=${
+            this.state.apiKeyImage
+          }`
+        )
           .then(response => response.json())
           .catch(error => error.message);
       })
-    ).then(result => {
-      this.setState({
-        shows: result
-      });
-      console.log(this.state.shows, "Promise");
-    });
+    )
+      .then(result => {
+        console.log(result, "JSON");
+        var imgArray = [];
+
+        result.map(elem => {
+          var imgExist = elem.tvposter
+            ? elem.tvposter[0].url
+            : elem.hdclearart
+              ? elem.hdclearart[0].url
+              : null;
+
+          if (elem.status === "error") return null; //Img not exist
+
+          return imgArray.push(imgExist);
+        });
+
+        this.setState({
+          imgLoading: false,
+          showsImg: imgArray
+        });
+        console.log(this.state.shows, "Promise");
+      })
+      .catch(error => error.message);
   };
 
-  showName = event => {
-    this.setState({
-      findShowName: event.target.value.trim()
-    });
-    //  console.log(event.target.value.trim())
-  };
+  /*---------------------------GET_DATA_END----------------------------------------------------*/
 
-  findShow = () => {
-    this.sendRequest(
-      `https://api.trakt.tv/search/show?query=${this.state.findShowName}`
-    );
-    console.log(this.state.findShowName);
-  };
+  /*-------------------------PAGINATION_SRART---------------------------------------------------*/
+
+  /*-------------------------PAGINATION_END---------------------------------------------------*/
 
   render() {
+    var showFilterHref = this.state.initialRequest.split("&page=")[0];
+    //console.log(showFilterHref, "INIIIIIIIIIT");
+    console.clear();
+
     return (
       <div>
-        <div className="searchInput">
-          <input onInput={this.showName} />
-          <button onClick={this.findShow}>Find Show</button>
-        </div>
-        {/* <Search/>*/}
+        <Table.ShowFilter sendRequest={this.sendRequest} />
+        <Table.SearchShow sendRequest={this.sendRequest} />
 
-        <Table>
-          <Table.Header />
+        {/* -------PAGINATION_SRART--------*/}
+        <Table.Pagination
+          sendRequest={this.sendRequest}
+          showFilter={showFilterHref}
+          pageCount={this.state.pageCount}
+          showGenre={this.state.showGenre}
+        />
+        {/* -------PAGINATION_END--------*/}
 
-          <Table.Shows shows={this.state.shows} />
-        </Table>
+        {/* -------TABLE_START--------*/}
+
+        {this.state.imgLoading ? (
+          <div className="loader">Loading...</div>
+        ) : (
+          <Table>
+            <Table.Header
+              sendRequest={this.sendRequest}
+              showFilter={showFilterHref}
+              setShowGenre={this.setShowGenre}
+            />
+
+            <Table.Shows
+              shows={this.state.shows}
+              showsImg={this.state.showsImg}
+            />
+          </Table>
+        )}
+        {/* -------TABLE_END--------*/}
+
+        {this.state.shows.length === 0 && (
+          <div
+            style={{
+              left: 0,
+              right: 0,
+              margin: "auto",
+              textAlign: "center"
+            }}
+          >
+            <h1>We have nothing to show you :(</h1>
+          </div>
+        )}
       </div>
     );
   }
 }
-
 const rootElement = document.getElementById("root");
 ReactDOM.render(<App />, rootElement);
