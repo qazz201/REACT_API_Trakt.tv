@@ -5,7 +5,7 @@ import GenreFilter from "./GenreFilter/GenreFilter";
 class TableHeader extends Component {
   render() {
     var heder = ["№", "Image", "Title", "Genre", "Seasons", "Year", "Country"];
-    console.log(this.state, "HEADERRRR");
+  
     var { sendRequest, showFilter, setShowGenre } = this.props;
 
     var th = heder.map(elem => {
