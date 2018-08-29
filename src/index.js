@@ -111,7 +111,7 @@ class App extends Component {
               ? elem.hdclearart[0].url
               : null;
 
-          if (elem.status === "error") return null; //Img not exist
+          if (elem.status === "error") return null; //Img not exist..
 
           return imgArray.push(imgExist);
         });
