@@ -66,7 +66,11 @@ class Pagination extends Component {
 
   render() {
     var { pageCount, showGenre } = this.props,
-      pageCountStyle = { fontSize: "0.8em", color: "rgba(255, 250, 0, 0.6)" },
+      pageCountStyle = {
+        fontSize: "0.8em",
+        color: "rgba(255, 250, 0, 0.6)",
+        width: "10%"
+      },
       showGenreStyle = {
         fontSize: "1.5em",
         color: "rgba(0, 195, 255, 0.788)",
