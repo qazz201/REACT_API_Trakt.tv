@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-import Button from "@material-ui/core/Button";
+//import Button from "@material-ui/core/Button";
 
 import Table from "./Table";
 import "./styles.css";
@@ -31,8 +31,8 @@ class App extends Component {
   /*---------------------------GET_DATA_START----------------------------------------------------*/
 
   sendRequest = initialRequest => {
-    this.setState(nextState => {
-      if (nextState.initialRequest !== initialRequest) {
+    this.setState(prewState => {
+      if (prewState.initialRequest !== initialRequest) {
         return {
           imgLoading: true,
           initialRequest: initialRequest
